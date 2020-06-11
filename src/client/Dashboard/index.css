@@ -4,12 +4,17 @@ table {
   border: 1px solid;
 }
 
+td {
+  border: 1px solid;
+  padding: 10px;
+}
+
 .date-range {
   margin-top: 50px;
   text-align: center;
 }
 
-td {
-  border: 1px solid;
-  padding: 10px;
+#chart1 {
+  width: 700px;
+  margin: 50px auto;
 }
