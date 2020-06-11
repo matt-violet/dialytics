@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import './app.css';
+import SignIn from './SignIn/index';
+import Dashboard from './Dashboard/index';
 
 const tokens = require('../../tokens');
 
-export default class App extends Component {
+class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -11,27 +12,23 @@ export default class App extends Component {
       accessToken: '',
       userBgData: {}
     };
-    this.navToDexcomLogin = this.navToDexcomLogin.bind(this);
+    this.requestUserBgData = this.requestUserBgData.bind(this);
   }
 
-  componentDidMount = () => {
+  componentDidMount() {
     const { authorizationCode } = this.state;
+
     if (!authorizationCode) {
-      this.saveUserAuth();
-    }
-    this.obtainAccessToken();
-  }
-
-  saveUserAuth = () => {
-    const userAuth = window.location.href.replace('http://localhost:3000/?code=', '');
-    if (userAuth.length) {
-      this.state.authorizationCode = userAuth;
+      this.extractAuthCode();
     }
   }
 
-  navToDexcomLogin = () => {
-    const dexcomLoginUrl = `https://api.dexcom.com/v2/oauth2/login?client_id=${tokens.client_id}&redirect_uri=${tokens.redirect_uri}&response_type=code&scope=offline_access`;
-    window.location.href = dexcomLoginUrl;
+  componentDidUpdate() {
+    const { authorizationCode, accessToken } = this.state;
+
+    if (authorizationCode && !accessToken) {
+      this.obtainAccessToken();
+    }
   }
 
   obtainAccessToken = () => {
@@ -39,10 +36,10 @@ export default class App extends Component {
     const { authorizationCode } = this.state;
     const data = `client_secret=${tokens.client_secret}&client_id=${tokens.client_id}&code=${authorizationCode}&grant_type=authorization_code&redirect_uri=${tokens.redirect_uri}`;
 
-    const req = new XMLHttpRequest();
-    req.withCredentials = true;
+    const xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
 
-    req.addEventListener('readystatechange', function () {
+    xhr.addEventListener('readystatechange', function setAccessTokenToState() {
       if (this.readyState === 4) {
         const res = JSON.parse(this.responseText);
         that.setState({
@@ -50,14 +47,15 @@ export default class App extends Component {
         });
       }
     });
-    req.open('POST', 'https://api.dexcom.com/v2/oauth2/token');
-    req.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
-    req.setRequestHeader('cache-control', 'no-cache');
 
-    req.send(data);
+    xhr.open('POST', 'https://api.dexcom.com/v2/oauth2/token');
+    xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader('cache-control', 'no-cache');
+
+    xhr.send(data);
   }
 
-  requestUserBgData = () => {
+  requestUserBgData() {
     const that = this;
     const data = null;
     const { accessToken } = this.state;
@@ -65,7 +63,7 @@ export default class App extends Component {
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
 
-    xhr.addEventListener('readystatechange', function () {
+    xhr.addEventListener('readystatechange', function setUserBgDataToState() {
       if (this.readyState === 4) {
         const res = JSON.parse(this.responseText);
         that.setState({
@@ -74,19 +72,34 @@ export default class App extends Component {
       }
     });
 
-    xhr.open('GET', 'https://api.dexcom.com/v2/users/self/egvs?startDate=2020-01-01T15:30:00&endDate=2020-01-20T15:45:00');
+    xhr.open('GET', 'https://api.dexcom.com/v2/users/self/egvs?startDate=2020-01-01T15:30:00&endDate=2020-01-01T16:30:00');
     xhr.setRequestHeader('authorization', `Bearer ${accessToken}`);
 
     xhr.send(data);
   }
 
+  extractAuthCode() {
+    const userAuth = window.location.href.replace('http://localhost:3000/?code=', '');
+
+    if (userAuth !== 'http://localhost:3000/') {
+      this.setState({
+        authorizationCode: userAuth
+      });
+    }
+  }
+
   render() {
+    const { accessToken, userBgData } = this.state;
+
+    if (accessToken) {
+      return (
+        <Dashboard requestUserBgData={this.requestUserBgData} userBgData={userBgData} />
+      );
+    }
     return (
-      <div>
-        <h1>Dialytics</h1>
-        <button type="button" onClick={this.navToDexcomLogin}>Obtain User Authorization</button>
-        <button type="button" onClick={this.requestUserBgData}>Request Data</button>
-      </div>
+      <SignIn />
     );
   }
 }
+
+export default App;
