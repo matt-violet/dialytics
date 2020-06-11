@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import SignIn from './SignIn/index';
 import Dashboard from './Dashboard/index';
 
+const moment = require('moment');
 const tokens = require('../../tokens');
 
 class App extends Component {
@@ -24,10 +25,13 @@ class App extends Component {
   }
 
   componentDidUpdate() {
-    const { authorizationCode, accessToken } = this.state;
+    const { authorizationCode, accessToken, userBgData } = this.state;
 
     if (authorizationCode && !accessToken) {
       this.obtainAccessToken();
+    }
+    if (authorizationCode && accessToken && !Object.keys(userBgData).length) {
+      this.requestUserBgData();
     }
   }
 
@@ -72,7 +76,12 @@ class App extends Component {
       }
     });
 
-    xhr.open('GET', 'https://api.dexcom.com/v2/users/self/egvs?startDate=2020-01-01T15:30:00&endDate=2020-01-01T16:30:00');
+    const endDate = moment().format().slice(0, -6);
+    const startDate = moment().subtract(1, 'week').format().slice(0, -6);
+    // console.log(endDate);
+    // console.log(startDate);
+
+    xhr.open('GET', `https://api.dexcom.com/v2/users/self/egvs?startDate=${startDate}&endDate=${endDate}`);
     xhr.setRequestHeader('authorization', `Bearer ${accessToken}`);
 
     xhr.send(data);
@@ -89,11 +98,11 @@ class App extends Component {
   }
 
   render() {
-    const { accessToken, userBgData } = this.state;
+    const { authorizationCode, accessToken, userBgData } = this.state;
 
-    if (accessToken) {
+    if (authorizationCode && accessToken && Object.keys(userBgData).length) {
       return (
-        <Dashboard requestUserBgData={this.requestUserBgData} userBgData={userBgData} />
+        <Dashboard userBgData={userBgData} />
       );
     }
     return (
