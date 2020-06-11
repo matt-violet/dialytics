@@ -1,7 +1,12 @@
 table {
-  margin: 50px auto 0 auto;
+  margin: 25px auto 0 auto;
   width: 500px;
   border: 1px solid;
+}
+
+.date-range {
+  margin-top: 50px;
+  text-align: center;
 }
 
 td {
