@@ -1,12 +1,13 @@
 table {
   margin: 25px auto 0 auto;
-  width: 500px;
+  width: 400px;
   border: 1px solid;
 }
 
 td {
   border: 1px solid;
   padding: 10px;
+  text-align: left;
 }
 
 .date-range {

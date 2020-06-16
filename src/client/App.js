@@ -15,6 +15,7 @@ class App extends Component {
       dateRange: {}
     };
     this.requestBgData = this.requestBgData.bind(this);
+    this.clearState = this.clearState.bind(this);
   }
 
   componentDidMount() {
@@ -34,6 +35,13 @@ class App extends Component {
     if (authorizationCode && accessToken && !Object.keys(bgData).length) {
       this.requestBgData();
     }
+  }
+
+  clearState = () => {
+    this.setState({
+      bgData: {},
+      dateRange: {}
+    });
   }
 
   obtainAccessToken = () => {
@@ -60,13 +68,14 @@ class App extends Component {
     xhr.send(data);
   }
 
-  requestBgData() {
+  requestBgData(startDateInput, endDateInput) {
     const that = this;
     const data = null;
     const { accessToken } = this.state;
-    const now = moment();
-    const endDate = now.format().slice(0, -6);
-    const startDate = now.subtract(1, 'week').format().slice(0, -6);
+    const startDateISO = startDateInput ? startDateInput.slice(0, -5) : moment().subtract(1, 'week').format().slice(0, -6);
+    const endDateISO = endDateInput ? endDateInput.slice(0, -5) : moment().format().slice(0, -6);
+    const startDateReadable = startDateInput ? moment(startDateInput).format('MMM DD, Y') : moment().subtract(1, 'week').format('ll');
+    const endDateReadable = endDateInput ? moment(endDateInput).format('MMM DD, Y') : moment().format('ll');
 
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
@@ -77,16 +86,16 @@ class App extends Component {
         that.setState((prevState) => {
           const state = Object.assign({}, prevState);
           state.bgData.egvs = res.egvs;
-          state.dateRange.startDateISO = startDate;
-          state.dateRange.endDateISO = endDate;
-          state.dateRange.endDateReadable = now.format('ll');
-          state.dateRange.startDateReadable = now.subtract(1, 'week').format('ll');
+          state.dateRange.startDateISO = startDateISO;
+          state.dateRange.endDateISO = endDateISO;
+          state.dateRange.endDateReadable = endDateReadable;
+          state.dateRange.startDateReadable = startDateReadable;
           return state;
         });
       }
     });
 
-    xhr.open('GET', `https://api.dexcom.com/v2/users/self/egvs?startDate=${startDate}&endDate=${endDate}`);
+    xhr.open('GET', `https://api.dexcom.com/v2/users/self/egvs?startDate=${startDateISO}&endDate=${endDateISO}`);
     xhr.setRequestHeader('authorization', `Bearer ${accessToken}`);
 
     xhr.send(data);
@@ -107,7 +116,7 @@ class App extends Component {
 
     if (authorizationCode && accessToken && Object.keys(bgData).length) {
       return (
-        <Dashboard bgData={bgData.egvs} dateRange={dateRange} />
+        <Dashboard bgData={bgData.egvs} dateRange={dateRange} requestBgData={this.requestBgData} clearState={this.clearState} />
       );
     }
     return (

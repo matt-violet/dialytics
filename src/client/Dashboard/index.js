@@ -1,10 +1,37 @@
 import React, { Component } from 'react';
 import './index.css';
 import { GoogleCharts } from 'google-charts';
+import 'flatpickr/dist/themes/material_green.css';
+
+const flatpickr = require('flatpickr');
 
 class Dashboard extends Component {
   componentDidMount() {
+    const { requestBgData } = this.props;
+
     GoogleCharts.load(this.drawChart);
+    flatpickr('.calendar', {
+      altInput: true,
+      altFormat: 'Y-m-d Z',
+      dateFormat: 'Y-m-d Z',
+      mode: 'range',
+      onChange: (dates) => {
+        if (dates[0] && dates[1]) {
+          requestBgData(dates[0].toISOString(), dates[1].toISOString());
+        }
+      }
+    });
+  }
+
+  componentDidUpdate(prevProps) {
+    const { dateRange, requestBgData } = this.props;
+
+    if (prevProps.dateRange !== dateRange) {
+      requestBgData(dateRange.startDateISO, dateRange.endDateISO)
+        .then(
+          this.drawChart()
+        );
+    }
   }
 
   getAvgGlucose = () => {
@@ -46,7 +73,7 @@ class Dashboard extends Component {
     }
 
     const result = ((numTimesHigh / bgData.length) * 100).toFixed(2);
-    return result;
+    return parseInt(result, 10);
   }
 
   getTimeLow() {
@@ -60,18 +87,18 @@ class Dashboard extends Component {
     }
 
     const result = ((numTimesLow / bgData.length) * 100).toFixed(2);
-    return result;
+    return parseInt(result, 10);
   }
 
   getDateRange() {
     const { dateRange } = this.props;
 
-    return dateRange.startDateReadable + ' - ' + dateRange.endDateReadable;
+    return `${dateRange.startDateReadable} - ${dateRange.endDateReadable}`;
   }
 
   drawChart = () => {
     const data = GoogleCharts.api.visualization.arrayToDataTable([
-      ['% Time in Range', 'Low', 'In Range', 'High'],
+      ['% Time in Range', `Low (${this.getTimeLow()}%)`, `In Range (${this.getTimeInRange()}%)`, `High (${this.getTimeHigh()}%)`],
       ['% Time in Range', parseInt(this.getTimeLow(), 10), parseInt(this.getTimeInRange(), 10), parseInt(this.getTimeHigh(), 10)]
     ]);
     const options = {
@@ -100,7 +127,8 @@ class Dashboard extends Component {
       return (
         <div>
           <h1>Dashboard</h1>
-            <p className='date-range'>{this.getDateRange()}</p>
+          <p className="date-range">{this.getDateRange()}</p>
+          <input className="calendar" type="text" />
           <div id="chart1" />
           <table>
             <tbody>
@@ -118,7 +146,7 @@ class Dashboard extends Component {
       );
     }
     return (
-      <div>Loading...</div>
+      <div>Loading Dashboard...</div>
     );
   }
 }
