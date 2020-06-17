@@ -112,11 +112,21 @@ class App extends Component {
   }
 
   render() {
-    const { authorizationCode, accessToken, bgData, dateRange } = this.state;
+    const {
+      authorizationCode,
+      accessToken,
+      bgData,
+      dateRange
+    } = this.state;
 
     if (authorizationCode && accessToken && Object.keys(bgData).length) {
       return (
-        <Dashboard bgData={bgData.egvs} dateRange={dateRange} requestBgData={this.requestBgData} clearState={this.clearState} />
+        <Dashboard
+          bgData={bgData.egvs}
+          dateRange={dateRange}
+          requestBgData={this.requestBgData}
+          clearState={this.clearState}
+        />
       );
     }
     return (

@@ -1,15 +1,20 @@
+/* eslint-disable react/prop-types */
 import React, { Component } from 'react';
+import BarChart from './BarChart/index';
 import './index.css';
-import { GoogleCharts } from 'google-charts';
 import 'flatpickr/dist/themes/material_green.css';
 
 const flatpickr = require('flatpickr');
 
 class Dashboard extends Component {
+  constructor(props) {
+    super(props);
+    this.getTimeInRange = this.getTimeInRange.bind(this);
+  }
+
   componentDidMount() {
     const { requestBgData } = this.props;
 
-    GoogleCharts.load(this.drawChart);
     flatpickr('.calendar', {
       altInput: true,
       altFormat: 'Y-m-d Z',
@@ -27,10 +32,7 @@ class Dashboard extends Component {
     const { dateRange, requestBgData } = this.props;
 
     if (prevProps.dateRange !== dateRange) {
-      requestBgData(dateRange.startDateISO, dateRange.endDateISO)
-        .then(
-          this.drawChart()
-        );
+      requestBgData(dateRange.startDateISO, dateRange.endDateISO);
     }
   }
 
@@ -62,74 +64,18 @@ class Dashboard extends Component {
     return result;
   }
 
-  getTimeHigh() {
-    const { bgData } = this.props;
-    let numTimesHigh = 0;
-
-    for (let i = 0; i < bgData.length; i += 1) {
-      if (bgData[i].value >= 180) {
-        numTimesHigh += 1;
-      }
-    }
-
-    const result = ((numTimesHigh / bgData.length) * 100).toFixed(2);
-    return parseInt(result, 10);
-  }
-
-  getTimeLow() {
-    const { bgData } = this.props;
-    let numTimesLow = 0;
-
-    for (let i = 0; i < bgData.length; i += 1) {
-      if (bgData[i].value <= 80) {
-        numTimesLow += 1;
-      }
-    }
-
-    const result = ((numTimesLow / bgData.length) * 100).toFixed(2);
-    return parseInt(result, 10);
-  }
-
-  getDateRange() {
-    const { dateRange } = this.props;
-
-    return `${dateRange.startDateReadable} - ${dateRange.endDateReadable}`;
-  }
-
-  drawChart = () => {
-    const data = GoogleCharts.api.visualization.arrayToDataTable([
-      ['% Time in Range', `Low (${this.getTimeLow()}%)`, `In Range (${this.getTimeInRange()}%)`, `High (${this.getTimeHigh()}%)`],
-      ['% Time in Range', parseInt(this.getTimeLow(), 10), parseInt(this.getTimeInRange(), 10), parseInt(this.getTimeHigh(), 10)]
-    ]);
-    const options = {
-      isStacked: true,
-      height: 100,
-      legend: { position: 'top', maxLines: 1 },
-      hAxis: {
-        minValue: 0,
-        ticks: [0, 25, 50, 75, 100]
-      },
-      series: {
-        0: { color: 'red' },
-        1: { color: 'limegreen' },
-        2: { color: 'gold' }
-      }
-    };
-    const barChart = new GoogleCharts.api.visualization.BarChart(document.getElementById('chart1'));
-
-    barChart.draw(data, options);
-  }
-
   render() {
-    const { bgData } = this.props;
+    const { bgData, dateRange } = this.props;
 
     if (bgData) {
       return (
         <div>
           <h1>Dashboard</h1>
-          <p className="date-range">{this.getDateRange()}</p>
+          <p className="date-range">
+            {`${dateRange.startDateReadable} - ${dateRange.endDateReadable}`}
+          </p>
           <input className="calendar" type="text" />
-          <div id="chart1" />
+          <BarChart bgData={bgData} getTimeInRange={this.getTimeInRange} />
           <table>
             <tbody>
               <tr>
