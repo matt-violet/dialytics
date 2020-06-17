@@ -1,9 +1,14 @@
 /* eslint-disable react/prop-types */
 import React, { Component } from 'react';
 import { GoogleCharts } from 'google-charts';
+import './index.css';
 
 class BarChart extends Component {
   componentDidMount() {
+    GoogleCharts.load(this.drawChart);
+  }
+
+  componentDidUpdate() {
     GoogleCharts.load(this.drawChart);
   }
 
@@ -45,6 +50,9 @@ class BarChart extends Component {
     const options = {
       isStacked: true,
       height: 100,
+      chartArea: {
+        width: '100%'
+      },
       legend: { position: 'top', maxLines: 1 },
       hAxis: {
         minValue: 0,
@@ -56,14 +64,14 @@ class BarChart extends Component {
         2: { color: 'gold' }
       }
     };
-    const barChart = new GoogleCharts.api.visualization.BarChart(document.getElementById('chart1'));
+    const barChart = new GoogleCharts.api.visualization.BarChart(document.getElementById('timeInRangeChart'));
 
     barChart.draw(data, options);
   }
 
   render() {
     return (
-      <div id="chart1" />
+      <div id="timeInRangeChart" />
     );
   }
 }

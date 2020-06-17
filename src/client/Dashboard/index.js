@@ -28,14 +28,6 @@ class Dashboard extends Component {
     });
   }
 
-  componentDidUpdate(prevProps) {
-    const { dateRange, requestBgData } = this.props;
-
-    if (prevProps.dateRange !== dateRange) {
-      requestBgData(dateRange.startDateISO, dateRange.endDateISO);
-    }
-  }
-
   getAvgGlucose = () => {
     const { bgData } = this.props;
     let sum = 0;
