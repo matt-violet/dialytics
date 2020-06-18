@@ -76,6 +76,7 @@ class App extends Component {
     const endDateISO = endDateInput ? endDateInput.slice(0, -5) : moment().format().slice(0, -6);
     const startDateReadable = startDateInput ? moment(startDateInput).format('MMM DD, Y') : moment().subtract(1, 'week').format('ll');
     const endDateReadable = endDateInput ? moment(endDateInput).format('MMM DD, Y') : moment().format('ll');
+    const rangeInDays = moment(endDateISO).diff(moment(startDateISO), 'days');
 
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
@@ -90,6 +91,7 @@ class App extends Component {
           state.dateRange.endDateISO = endDateISO;
           state.dateRange.endDateReadable = endDateReadable;
           state.dateRange.startDateReadable = startDateReadable;
+          state.dateRange.rangeInDays = rangeInDays;
           return state;
         });
       }

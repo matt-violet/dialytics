@@ -63,10 +63,15 @@ class Dashboard extends Component {
       return (
         <div>
           <h1>Dashboard</h1>
-          <p className="date-range">
+          <div className="date-range">
+            <p className="range-in-days">
+              {dateRange.rangeInDays} day range
+            </p>
+            <p className="dates">
             {`${dateRange.startDateReadable} - ${dateRange.endDateReadable}`}
-          </p>
-          <input className="calendar" type="text" />
+            </p>
+          </div>
+          <input className="calendar" type="text" placeholder="Select date range" />
           <BarChart bgData={bgData} getTimeInRange={this.getTimeInRange} />
           <table>
             <tbody>

@@ -10,7 +10,26 @@ td {
   text-align: left;
 }
 
+p {
+  margin: 5px 0;
+}
+
 .date-range {
-  margin-top: 50px;
+  margin-top: 60px;
   text-align: center;
+}
+
+.range-in-days {
+  color: grey;
+  font-weight: 300;
+  font-size: 22px;
+}
+
+.dates {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.calendar {
+  margin-top: 15px;
 }
