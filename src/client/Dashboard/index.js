@@ -7,13 +7,8 @@ import 'flatpickr/dist/themes/material_green.css';
 const flatpickr = require('flatpickr');
 
 class Dashboard extends Component {
-  constructor(props) {
-    super(props);
-    this.getTimeInRange = this.getTimeInRange.bind(this);
-  }
-
   componentDidMount() {
-    const { requestBgData } = this.props;
+    const { getBgData } = this.props;
 
     flatpickr('.calendar', {
       altInput: true,
@@ -22,7 +17,7 @@ class Dashboard extends Component {
       mode: 'range',
       onChange: (dates) => {
         if (dates[0] && dates[1]) {
-          requestBgData(dates[0].toISOString(), dates[1].toISOString());
+          getBgData(dates[0].toISOString(), dates[1].toISOString());
         }
       }
     });
@@ -42,33 +37,44 @@ class Dashboard extends Component {
     return result;
   }
 
-  getTimeInRange() {
-    const { bgData } = this.props;
+  getChangeOfTimeInRange() {
+    const { bgData, prevRangeBgData } = this.props;
+    const currentTimeInRange = this.getTimeInRange(bgData);
+    const prevTimeInRange = this.getTimeInRange(prevRangeBgData);
+
+    const percentDifference = currentTimeInRange >= prevTimeInRange
+      ? `+${currentTimeInRange - prevTimeInRange}`
+      : `-${prevTimeInRange - currentTimeInRange}`;
+
+    return percentDifference;
+  }
+
+  getTimeInRange(data) {
     let numTimesInRange = 0;
 
-    for (let i = 0; i < bgData.length; i += 1) {
-      if (bgData[i].value >= 80 && bgData[i].value <= 180) {
+    for (let i = 0; i < data.length; i += 1) {
+      if (data[i].value >= 80 && data[i].value <= 180) {
         numTimesInRange += 1;
       }
     }
 
-    const result = (numTimesInRange / bgData.length).toFixed(2).slice(2);
+    const result = (numTimesInRange / data.length).toFixed(2).slice(2);
     return result;
   }
 
   render() {
     const { bgData, dateRange } = this.props;
 
-    if (bgData) {
+    if (bgData.length) {
       return (
         <div>
           <h1>Dashboard</h1>
           <div className="date-range">
             <p className="range-in-days">
-              {dateRange.rangeInDays} day range
+              {`${dateRange.rangeInDays} day range`}
             </p>
             <p className="dates">
-            {`${dateRange.startDateReadable} - ${dateRange.endDateReadable}`}
+              {`${dateRange.startDateReadable} - ${dateRange.endDateReadable}`}
             </p>
           </div>
           <input className="calendar" type="text" placeholder="Select date range" />
@@ -77,11 +83,15 @@ class Dashboard extends Component {
             <tbody>
               <tr>
                 <td>Average Glucose:</td>
-                <td>{this.getAvgGlucose()} mg/dL</td>
+                <td>{`${this.getAvgGlucose()}mg/dL`}</td>
               </tr>
               <tr>
                 <td>Time in Range:</td>
-                <td>{this.getTimeInRange()}%</td>
+                <td>{`${this.getTimeInRange(bgData)}%`}</td>
+              </tr>
+              <tr>
+                <td>{`Change since prior ${dateRange.rangeInDays} day period:`}</td>
+                <td>{`${this.getChangeOfTimeInRange()}%`}</td>
               </tr>
             </tbody>
           </table>

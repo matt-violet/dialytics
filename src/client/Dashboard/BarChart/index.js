@@ -41,11 +41,11 @@ class BarChart extends Component {
   }
 
   drawChart = () => {
-    const { getTimeInRange } = this.props;
+    const { bgData, getTimeInRange } = this.props;
 
     const data = GoogleCharts.api.visualization.arrayToDataTable([
-      ['% Time in Range', `Low (${this.getTimeLow()}%)`, `In Range (${getTimeInRange()}%)`, `High (${this.getTimeHigh()}%)`],
-      ['% Time in Range', parseInt(this.getTimeLow(), 10), parseInt(getTimeInRange(), 10), parseInt(this.getTimeHigh(), 10)]
+      ['% Time in Range', `Low (${this.getTimeLow()}%)`, `In Range (${getTimeInRange(bgData)}%)`, `High (${this.getTimeHigh()}%)`],
+      ['% Time in Range', parseInt(this.getTimeLow(), 10), parseInt(getTimeInRange(bgData), 10), parseInt(this.getTimeHigh(), 10)]
     ]);
     const options = {
       isStacked: true,

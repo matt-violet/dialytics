@@ -11,11 +11,11 @@ class App extends Component {
     this.state = {
       authorizationCode: '',
       accessToken: '',
-      bgData: {},
-      dateRange: {}
+      bgData: [],
+      prevRangeBgData: [],
+      dateRange: {},
     };
-    this.requestBgData = this.requestBgData.bind(this);
-    this.clearState = this.clearState.bind(this);
+    this.getBgData = this.getBgData.bind(this);
   }
 
   componentDidMount() {
@@ -32,16 +32,60 @@ class App extends Component {
     if (authorizationCode && !accessToken) {
       this.obtainAccessToken();
     }
-    if (authorizationCode && accessToken && !Object.keys(bgData).length) {
-      this.requestBgData();
+    if (authorizationCode && accessToken && !bgData.length) {
+      this.getBgData();
     }
   }
 
-  clearState = () => {
-    this.setState({
-      bgData: {},
-      dateRange: {}
+  getBgData(startDateInput, endDateInput) {
+    const { accessToken } = this.state;
+    const that = this;
+    const data = null;
+    const startDateISO = startDateInput ? startDateInput.slice(0, -5) : moment().subtract(1, 'week').format().slice(0, -6);
+    const endDateISO = endDateInput ? endDateInput.slice(0, -5) : moment().format().slice(0, -6);
+    const startDateReadable = startDateInput ? moment(startDateInput).format('MMM DD, Y') : moment().subtract(1, 'week').format('ll');
+    const endDateReadable = endDateInput ? moment(endDateInput).format('MMM DD, Y') : moment().format('ll');
+    const rangeInDays = moment(endDateISO).diff(moment(startDateISO), 'days');
+    const prevRangeStartDateISO = moment(startDateISO).subtract(rangeInDays, 'days').format().slice(0, -6);
+    const prevRangeEndDateISO = moment(endDateISO).subtract(rangeInDays, 'days').format().slice(0, -6);
+
+    const xhr = new XMLHttpRequest();
+    const xhr2 = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    xhr.withCredentials = true;
+
+    xhr.addEventListener('readystatechange', function setBgDataToState() {
+      if (this.readyState === 4) {
+        const res = JSON.parse(this.responseText);
+        res.startDateReadable = startDateReadable;
+        res.startDateISO = startDateISO;
+        res.endDateReadable = endDateReadable;
+        res.endDateISO = endDateISO;
+        res.rangeInDays = rangeInDays;
+        res.prevDateRange = {};
+        res.prevDateRange.startDateISO = prevRangeStartDateISO;
+        res.prevDateRange.endDateISO = prevRangeEndDateISO;
+
+        that.saveBgData(res);
+      }
     });
+
+    xhr2.addEventListener('readystatechange', function setPrevRangeBgData() {
+      if (this.readyState === 4) {
+        const res2 = JSON.parse(this.responseText);
+        res2.isPrevData = true;
+
+        that.saveBgData(res2);
+      }
+    });
+
+    xhr.open('GET', `https://api.dexcom.com/v2/users/self/egvs?startDate=${startDateISO}&endDate=${endDateISO}`);
+    xhr2.open('GET', `https://api.dexcom.com/v2/users/self/egvs?startDate=${prevRangeStartDateISO}&endDate=${prevRangeEndDateISO}`);
+    xhr.setRequestHeader('authorization', `Bearer ${accessToken}`);
+    xhr2.setRequestHeader('authorization', `Bearer ${accessToken}`);
+
+    xhr.send(data);
+    xhr2.send(data);
   }
 
   obtainAccessToken = () => {
@@ -68,39 +112,30 @@ class App extends Component {
     xhr.send(data);
   }
 
-  requestBgData(startDateInput, endDateInput) {
-    const that = this;
-    const data = null;
-    const { accessToken } = this.state;
-    const startDateISO = startDateInput ? startDateInput.slice(0, -5) : moment().subtract(1, 'week').format().slice(0, -6);
-    const endDateISO = endDateInput ? endDateInput.slice(0, -5) : moment().format().slice(0, -6);
-    const startDateReadable = startDateInput ? moment(startDateInput).format('MMM DD, Y') : moment().subtract(1, 'week').format('ll');
-    const endDateReadable = endDateInput ? moment(endDateInput).format('MMM DD, Y') : moment().format('ll');
-    const rangeInDays = moment(endDateISO).diff(moment(startDateISO), 'days');
+  saveBgData(data) {
+    if (data.isPrevData) {
+      this.setState((prevState) => {
+        const state = Object.assign({}, prevState);
+        state.prevRangeBgData = data.egvs;
 
-    const xhr = new XMLHttpRequest();
-    xhr.withCredentials = true;
+        return state;
+      });
+    } else {
+      this.setState((prevState) => {
+        const state = Object.assign({}, prevState);
+        state.bgData = data.egvs;
+        state.dateRange.startDateISO = data.startDateISO;
+        state.dateRange.endDateISO = data.endDateISO;
+        state.dateRange.endDateReadable = data.endDateReadable;
+        state.dateRange.startDateReadable = data.startDateReadable;
+        state.dateRange.rangeInDays = data.rangeInDays;
+        state.prevDateRange = {};
+        state.prevDateRange.startDateISO = data.prevDateRange.startDateISO;
+        state.prevDateRange.endDateISO = data.prevDateRange.endDateISO;
 
-    xhr.addEventListener('readystatechange', function setBgDataToState() {
-      if (this.readyState === 4) {
-        const res = JSON.parse(this.responseText);
-        that.setState((prevState) => {
-          const state = Object.assign({}, prevState);
-          state.bgData.egvs = res.egvs;
-          state.dateRange.startDateISO = startDateISO;
-          state.dateRange.endDateISO = endDateISO;
-          state.dateRange.endDateReadable = endDateReadable;
-          state.dateRange.startDateReadable = startDateReadable;
-          state.dateRange.rangeInDays = rangeInDays;
-          return state;
-        });
-      }
-    });
-
-    xhr.open('GET', `https://api.dexcom.com/v2/users/self/egvs?startDate=${startDateISO}&endDate=${endDateISO}`);
-    xhr.setRequestHeader('authorization', `Bearer ${accessToken}`);
-
-    xhr.send(data);
+        return state;
+      });
+    }
   }
 
   extractAuthCode() {
@@ -118,16 +153,17 @@ class App extends Component {
       authorizationCode,
       accessToken,
       bgData,
-      dateRange
+      prevRangeBgData,
+      dateRange,
     } = this.state;
 
-    if (authorizationCode && accessToken && Object.keys(bgData).length) {
+    if (authorizationCode && accessToken && bgData.length) {
       return (
         <Dashboard
-          bgData={bgData.egvs}
+          bgData={bgData}
           dateRange={dateRange}
-          requestBgData={this.requestBgData}
-          clearState={this.clearState}
+          prevRangeBgData={prevRangeBgData}
+          getBgData={this.getBgData}
         />
       );
     }
