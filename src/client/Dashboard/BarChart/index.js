@@ -49,9 +49,13 @@ class BarChart extends Component {
       isStacked: true,
       height: 100,
       chartArea: {
-        width: '100%'
+        width: '90%'
       },
-      legend: { position: 'top', maxLines: 1 },
+      legend: {
+        position: 'top',
+        maxLines: 1,
+        textStyle: { fontSize: 12 }
+      },
       hAxis: {
         minValue: 0,
         ticks: [0, 25, 50, 75, 100]

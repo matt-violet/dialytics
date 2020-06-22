@@ -64,7 +64,7 @@ class Dashboard extends Component {
   getStandardDeviation = (data) => {
     const deviations = [];
     let sumOfDeviations = 0;
-    
+
     for (let i = 0; i < data.length; i += 1) {
       deviations.push(Math.abs(data[i].value - 100));
     }
@@ -78,42 +78,57 @@ class Dashboard extends Component {
   }
 
   render() {
-    const { bgData, dateRange } = this.props;
+    const { bgData, dateRange, deviceSettings } = this.props;
 
     if (bgData.length) {
       return (
         <div>
-          <h1>Dashboard</h1>
-          <div className="date-range">
-            <p className="range-in-days">
-              {`${dateRange.rangeInDays} day range`}
-            </p>
-            <p className="dates">
-              {`${dateRange.startDateReadable} - ${dateRange.endDateReadable}`}
-            </p>
+          <h1 className="title">Dialytics</h1>
+          <div className="analytics-container">
+            <div className="date-range">
+              <p className="range-in-days">{`${dateRange.rangeInDays} Day Range`}</p>
+              <p className="dates">{`${dateRange.startDateReadable} - ${dateRange.endDateReadable}`}</p>
+            </div>
+            <input className="calendar" type="text" placeholder="Select date range" />
+            <BarChart bgData={bgData} getTimeInRange={this.getTimeInRange} />
+            <div className="bg-analytics-container">
+              <div>
+                <h3 className="header">Average Glucose:</h3>
+                <p className="numbers">{`${this.getAvgGlucose(bgData)} mg/dL`}</p>
+              </div>
+              <div>
+                <h3 className="header">Time in Range:</h3>
+                <p className="numbers">{`${this.getTimeInRange(bgData)}%`}</p>
+              </div>
+              <div>
+                <h3 className="header">{`Change since prior ${dateRange.rangeInDays} day period:`}</h3>
+                <p className="numbers">{`${this.getChangeOfTimeInRange()}%`}</p>
+              </div>
+              <div>
+                <h3 className="header">Average Standard Deviation:</h3>
+                <p className="numbers">{`${this.getStandardDeviation(bgData)} mg/dL`}</p>
+              </div>
+            </div>
           </div>
-          <input className="calendar" type="text" placeholder="Select date range" />
-          <BarChart bgData={bgData} getTimeInRange={this.getTimeInRange} />
-          <table>
-            <tbody>
-              <tr>
-                <td>Average Glucose:</td>
-                <td>{`${this.getAvgGlucose(bgData)} mg/dL`}</td>
-              </tr>
-              <tr>
-                <td>Time in Range:</td>
-                <td>{`${this.getTimeInRange(bgData)}%`}</td>
-              </tr>
-              <tr>
-                <td>{`Change since prior ${dateRange.rangeInDays} day period:`}</td>
-                <td>{`${this.getChangeOfTimeInRange()}%`}</td>
-              </tr>
-              <tr>
-                <td>Average Standard Deviation:</td>
-                <td>{`${this.getStandardDeviation(bgData)} mg/dL`}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="device-settings-container">
+            <div className="device-settings-header">Device Settings</div>
+            <div>
+              <h3 className="header">Display Device:</h3>
+              <p className="numbers">{deviceSettings.displayDevice}</p>
+            </div>
+            <div>
+              <h3 className="header">High Alert:</h3>
+              <p className="numbers">{`${deviceSettings.highAlert} mg/dL`}</p>
+            </div>
+            <div>
+              <h3 className="header">Low Alert:</h3>
+              <p className="numbers">{`${deviceSettings.lowAlert} mg/dL`}</p>
+            </div>
+            <div>
+              <h3 className="header">Transmitter Generation:</h3>
+              <p className="numbers">{deviceSettings.transmitterGen}</p>
+            </div>
+          </div>
         </div>
       );
     }

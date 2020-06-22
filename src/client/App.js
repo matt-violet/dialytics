@@ -14,6 +14,7 @@ class App extends Component {
       bgData: [],
       prevRangeBgData: [],
       dateRange: {},
+      deviceSettings: {}
     };
     this.getBgData = this.getBgData.bind(this);
   }
@@ -33,8 +34,42 @@ class App extends Component {
       this.obtainAccessToken();
     }
     if (authorizationCode && accessToken && !bgData.length) {
+      this.getDeviceSettings();
       this.getBgData();
     }
+  }
+
+  getDeviceSettings = () => {
+    const { accessToken } = this.state;
+    const that = this;
+    const data = null;
+    const startDateISO = moment().subtract(1, 'week').format().slice(0, -6);
+    const endDateISO = moment().format().slice(0, -6);
+
+    const xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+
+    xhr.addEventListener('readystatechange', function saveDeviceSettingsToState() {
+      if (this.readyState === 4) {
+        const res = JSON.parse(this.responseText).devices[0];
+        console.log(res);
+        that.setState((prevState) => {
+          const state = Object.assign({}, prevState);
+          state.deviceSettings = {};
+          state.deviceSettings.displayDevice = res.displayDevice;
+          state.deviceSettings.transmitterGen = res.transmitterGeneration;
+          state.deviceSettings.highAlert = res.alertScheduleList[0].alertSettings[3].value;
+          state.deviceSettings.lowAlert = res.alertScheduleList[0].alertSettings[6].value;
+
+          return state;
+        });
+      }
+    });
+
+    xhr.open('GET', `https://api.dexcom.com/v2/users/self/devices?startDate=${startDateISO}&endDate=${endDateISO}`);
+    xhr.setRequestHeader('authorization', `Bearer ${accessToken}`);
+
+    xhr.send(data);
   }
 
   getBgData(startDateInput, endDateInput) {
@@ -155,6 +190,7 @@ class App extends Component {
       bgData,
       prevRangeBgData,
       dateRange,
+      deviceSettings
     } = this.state;
 
     if (authorizationCode && accessToken && bgData.length) {
@@ -164,6 +200,7 @@ class App extends Component {
           dateRange={dateRange}
           prevRangeBgData={prevRangeBgData}
           getBgData={this.getBgData}
+          deviceSettings={deviceSettings}
         />
       );
     }
