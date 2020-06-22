@@ -23,13 +23,12 @@ class Dashboard extends Component {
     });
   }
 
-  getAvgGlucose = () => {
-    const { bgData } = this.props;
+  getAvgGlucose = (data) => {
     let sum = 0;
     let count = 0;
 
-    for (let i = 0; i < bgData.length; i += 1) {
-      sum += bgData[i].value;
+    for (let i = 0; i < data.length; i += 1) {
+      sum += data[i].value;
       count += 1;
     }
 
@@ -49,7 +48,7 @@ class Dashboard extends Component {
     return percentDifference;
   }
 
-  getTimeInRange(data) {
+  getTimeInRange = (data) => {
     let numTimesInRange = 0;
 
     for (let i = 0; i < data.length; i += 1) {
@@ -60,6 +59,22 @@ class Dashboard extends Component {
 
     const result = (numTimesInRange / data.length).toFixed(2).slice(2);
     return result;
+  }
+
+  getStandardDeviation = (data) => {
+    const deviations = [];
+    let sumOfDeviations = 0;
+    
+    for (let i = 0; i < data.length; i += 1) {
+      deviations.push(Math.abs(data[i].value - 100));
+    }
+    for (let i = 0; i < deviations.length; i += 1) {
+      sumOfDeviations += deviations[i];
+    }
+
+    const avgDeviation = Math.round(sumOfDeviations / deviations.length);
+
+    return avgDeviation;
   }
 
   render() {
@@ -83,7 +98,7 @@ class Dashboard extends Component {
             <tbody>
               <tr>
                 <td>Average Glucose:</td>
-                <td>{`${this.getAvgGlucose()}mg/dL`}</td>
+                <td>{`${this.getAvgGlucose(bgData)} mg/dL`}</td>
               </tr>
               <tr>
                 <td>Time in Range:</td>
@@ -92,6 +107,10 @@ class Dashboard extends Component {
               <tr>
                 <td>{`Change since prior ${dateRange.rangeInDays} day period:`}</td>
                 <td>{`${this.getChangeOfTimeInRange()}%`}</td>
+              </tr>
+              <tr>
+                <td>Average Standard Deviation:</td>
+                <td>{`${this.getStandardDeviation(bgData)} mg/dL`}</td>
               </tr>
             </tbody>
           </table>

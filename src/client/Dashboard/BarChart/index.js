@@ -12,31 +12,29 @@ class BarChart extends Component {
     GoogleCharts.load(this.drawChart);
   }
 
-  getTimeLow() {
-    const { bgData } = this.props;
+  getTimeLow = (data) => {
     let numTimesLow = 0;
 
-    for (let i = 0; i < bgData.length; i += 1) {
-      if (bgData[i].value <= 80) {
+    for (let i = 0; i < data.length; i += 1) {
+      if (data[i].value <= 80) {
         numTimesLow += 1;
       }
     }
 
-    const result = ((numTimesLow / bgData.length) * 100).toFixed(2);
+    const result = ((numTimesLow / data.length) * 100).toFixed(2);
     return parseInt(result, 10);
   }
 
-  getTimeHigh() {
-    const { bgData } = this.props;
+  getTimeHigh = (data) => {
     let numTimesHigh = 0;
 
-    for (let i = 0; i < bgData.length; i += 1) {
-      if (bgData[i].value >= 180) {
+    for (let i = 0; i < data.length; i += 1) {
+      if (data[i].value >= 180) {
         numTimesHigh += 1;
       }
     }
 
-    const result = ((numTimesHigh / bgData.length) * 100).toFixed(2);
+    const result = ((numTimesHigh / data.length) * 100).toFixed(2);
     return parseInt(result, 10);
   }
 
@@ -44,8 +42,8 @@ class BarChart extends Component {
     const { bgData, getTimeInRange } = this.props;
 
     const data = GoogleCharts.api.visualization.arrayToDataTable([
-      ['% Time in Range', `Low (${this.getTimeLow()}%)`, `In Range (${getTimeInRange(bgData)}%)`, `High (${this.getTimeHigh()}%)`],
-      ['% Time in Range', parseInt(this.getTimeLow(), 10), parseInt(getTimeInRange(bgData), 10), parseInt(this.getTimeHigh(), 10)]
+      ['% Time in Range', `Low (${this.getTimeLow(bgData)}%)`, `In Range (${getTimeInRange(bgData)}%)`, `High (${this.getTimeHigh(bgData)}%)`],
+      ['% Time in Range', parseInt(this.getTimeLow(bgData), 10), parseInt(getTimeInRange(bgData), 10), parseInt(this.getTimeHigh(bgData), 10)]
     ]);
     const options = {
       isStacked: true,
