@@ -9,8 +9,7 @@ const flatpickr = require('flatpickr');
 class Dashboard extends Component {
   componentDidMount() {
     const { getBgData } = this.props;
-
-    flatpickr('.calendar', {
+    const config = {
       altInput: true,
       altFormat: 'Y-m-d Z',
       dateFormat: 'Y-m-d Z',
@@ -18,9 +17,12 @@ class Dashboard extends Component {
       onChange: (dates) => {
         if (dates[0] && dates[1]) {
           getBgData(dates[0].toISOString(), dates[1].toISOString());
+          this.clearCalendarInput();
         }
       }
-    });
+    };
+
+    flatpickr('.calendar', config);
   }
 
   getAvgGlucose = (data) => {
@@ -77,16 +79,34 @@ class Dashboard extends Component {
     return avgDeviation;
   }
 
+  clearCalendarInput() {
+    const { getBgData } = this.props;
+    const config = {
+      altInput: true,
+      altFormat: 'Y-m-d Z',
+      dateFormat: 'Y-m-d Z',
+      mode: 'range',
+      onChange: (dates) => {
+        if (dates[0] && dates[1]) {
+          getBgData(dates[0].toISOString(), dates[1].toISOString());
+          this.clearCalendarInput();
+        }
+      }
+    };
+
+    flatpickr('.calendar', config).clear('');
+  }
+
   render() {
     const { bgData, dateRange, deviceSettings } = this.props;
 
     if (bgData.length) {
       return (
         <div>
-          <h1 className="title">Dialytics</h1>
+          <h1 className="title">Dialytics Dashboard</h1>
           <div className="analytics-container">
             <div className="date-range">
-              <p className="range-in-days">{`${dateRange.rangeInDays} Day Range`}</p>
+              <p className="range-in-days">{dateRange.rangeInDays === 1 ? `${dateRange.rangeInDays} Day` : `${dateRange.rangeInDays} Days`}</p>
               <p className="dates">{`${dateRange.startDateReadable} - ${dateRange.endDateReadable}`}</p>
             </div>
             <input className="calendar" type="text" placeholder="Select date range" />

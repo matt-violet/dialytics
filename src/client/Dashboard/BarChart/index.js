@@ -43,7 +43,7 @@ class BarChart extends Component {
 
     const data = GoogleCharts.api.visualization.arrayToDataTable([
       ['% Time in Range', `Low (${this.getTimeLow(bgData)}%)`, `In Range (${getTimeInRange(bgData)}%)`, `High (${this.getTimeHigh(bgData)}%)`],
-      ['% Time in Range', parseInt(this.getTimeLow(bgData), 10), parseInt(getTimeInRange(bgData), 10), parseInt(this.getTimeHigh(bgData), 10)]
+      ['', parseInt(this.getTimeLow(bgData), 10), parseInt(getTimeInRange(bgData), 10), parseInt(this.getTimeHigh(bgData), 10)]
     ]);
     const options = {
       isStacked: true,

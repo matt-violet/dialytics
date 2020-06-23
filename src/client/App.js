@@ -52,7 +52,6 @@ class App extends Component {
     xhr.addEventListener('readystatechange', function saveDeviceSettingsToState() {
       if (this.readyState === 4) {
         const res = JSON.parse(this.responseText).devices[0];
-        console.log(res);
         that.setState((prevState) => {
           const state = Object.assign({}, prevState);
           state.deviceSettings = {};
@@ -202,6 +201,11 @@ class App extends Component {
           getBgData={this.getBgData}
           deviceSettings={deviceSettings}
         />
+      );
+    }
+    if (authorizationCode && !bgData.length) {
+      return (
+        <div className="loading"></div>
       );
     }
     return (
