@@ -14,7 +14,7 @@ export default class SignIn extends Component {
     return (
       <div>
         <h1>Welcome to Dialytics</h1>
-        <h4>Powered by <a href="https://www.dexcom.com/" target="blank">Dexcom</a></h4>
+        <h4>Powered by <a href="https://developer.dexcom.com/overview" target="blank">Dexcom</a></h4>
         <button type="button" onClick={this.navToDexcomLogin}>Sign In</button>
       </div>
     );
